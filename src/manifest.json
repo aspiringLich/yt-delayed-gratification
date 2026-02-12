@@ -1,0 +1,32 @@
+{
+    "manifest_version": 2,
+    "name": "YT Delayed Gratification",
+    "version": "0.1.0",
+    "description": "YouTube delayed gratification extension",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "yt-delayed-gratification@example.com",
+            "strict_min_version": "109.0"
+        }
+    },
+    "permissions": ["storage", "*://*.youtube.com/*"],
+    "content_scripts": [
+        {
+            "matches": ["*://*.youtube.com/*"],
+            "js": ["lib/browser-polyfill.js", "content/content.js"],
+            "css": ["styles.css"],
+            "run_at": "document_idle"
+        }
+    ],
+    "background": {
+        "scripts": ["lib/browser-polyfill.js", "background/background.js"]
+    },
+    "browser_action": {
+        "default_popup": "popup/popup.html",
+        "default_title": "YT Delayed Gratification"
+    },
+    "options_ui": {
+        "page": "options/options.html",
+        "open_in_tab": true
+    }
+}

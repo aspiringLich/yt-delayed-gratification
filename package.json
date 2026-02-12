@@ -1,0 +1,17 @@
+{
+    "name": "yt-delayed-gratification",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+        "start": "web-ext run --config web-ext-config.mjs",
+        "build": "web-ext build --config web-ext-config.mjs --overwrite-dest",
+        "lint": "web-ext lint --config web-ext-config.mjs"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.28.0",
+    "dependencies": {
+        "webextension-polyfill": "^0.12.0"
+    }
+}

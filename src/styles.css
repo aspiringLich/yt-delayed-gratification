@@ -1,0 +1,12 @@
+#ytdg-player-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0f0f0f;
+    color: #aaa;
+    font-family: system-ui, sans-serif;
+    font-size: 18px;
+    border-radius: 12px;
+}
