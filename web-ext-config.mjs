@@ -1,5 +1,5 @@
 export default {
-    sourceDir: "./src",
+    sourceDir: "./build",
     artifactsDir: "./dist",
     run: {
         startUrl: ["about:debugging#/runtime/this-firefox"],

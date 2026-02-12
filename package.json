@@ -3,9 +3,12 @@
     "version": "1.0.0",
     "description": "",
     "scripts": {
-        "start": "web-ext run --config web-ext-config.mjs",
-        "build": "web-ext build --config web-ext-config.mjs --overwrite-dest",
-        "lint": "web-ext lint --config web-ext-config.mjs"
+        "build:js": "node esbuild.mjs",
+        "build:ext": "web-ext build --config web-ext-config.mjs --overwrite-dest",
+        "build": "pnpm build:js && pnpm build:ext",
+        "start": "pnpm build:js && web-ext run --config web-ext-config.mjs",
+        "lint": "web-ext lint --config web-ext-config.mjs",
+        "typecheck": "tsc --noEmit"
     },
     "keywords": [],
     "author": "",
@@ -13,5 +16,10 @@
     "packageManager": "pnpm@10.28.0",
     "dependencies": {
         "webextension-polyfill": "^0.12.0"
+    },
+    "devDependencies": {
+        "@types/webextension-polyfill": "^0.12.4",
+        "esbuild": "^0.27.3",
+        "typescript": "^5.9.3"
     }
 }

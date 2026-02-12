@@ -13,13 +13,13 @@
     "content_scripts": [
         {
             "matches": ["*://*.youtube.com/*"],
-            "js": ["lib/browser-polyfill.js", "content/content.js"],
+            "js": ["content/content.js"],
             "css": ["styles.css"],
             "run_at": "document_idle"
         }
     ],
     "background": {
-        "scripts": ["lib/browser-polyfill.js", "background/background.js"]
+        "scripts": ["background/background.js"]
     },
     "browser_action": {
         "default_popup": "popup/popup.html",
