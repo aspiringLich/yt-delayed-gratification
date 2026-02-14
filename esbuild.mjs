@@ -1,28 +1,46 @@
-import { build } from "esbuild";
-import { cpSync } from "fs";
-import { rmSync } from "fs";
+import { context, build } from "esbuild";
+import { cpSync, rmSync, globSync, watch as fsWatch } from "fs";
 
-rmSync("build", { recursive: true, force: true });
+const watching = process.argv.includes("--watch");
 
-await build({
-  entryPoints: [
-    "src/content/content.ts",
-    "src/background/background.ts",
-    "src/popup/popup.ts",
-    "src/options/options.ts",
-  ],
+const SRC = "src";
+const OUT = "build";
+
+// Find all .ts files under src/ that aren't in lib/ (those are imported, not entry points)
+const entryPoints = globSync(`${SRC}/**/!(*lib*)/*.ts`);
+
+const options = {
+  entryPoints,
   bundle: true,
-  outdir: "build",
-  outbase: "src",
+  outdir: OUT,
+  outbase: SRC,
   format: "iife",
   target: "es2020",
-});
+  logLevel: "info",
+};
 
-// Copy static assets into build/
-cpSync("src/manifest.json", "build/manifest.json");
-cpSync("src/styles.css", "build/styles.css");
-cpSync("src/popup/popup.html", "build/popup/popup.html");
-cpSync("src/popup/popup.css", "build/popup/popup.css");
-cpSync("src/options/options.html", "build/options/options.html");
-cpSync("src/options/options.css", "build/options/options.css");
-cpSync("src/icons", "build/icons", { recursive: true });
+function copyStatic() {
+  cpSync(SRC, OUT, {
+    recursive: true,
+    filter: (src) => !src.endsWith(".ts"),
+  });
+}
+
+rmSync(OUT, { recursive: true, force: true });
+
+if (watching) {
+  const ctx = await context(options);
+  await ctx.watch();
+  copyStatic();
+
+  fsWatch(SRC, { recursive: true }, (_, filename) => {
+    if (filename && !filename.endsWith(".ts")) {
+      copyStatic();
+    }
+  });
+
+  console.log("Watching for changes...");
+} else {
+  await build(options);
+  copyStatic();
+}

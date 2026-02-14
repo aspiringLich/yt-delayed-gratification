@@ -6,6 +6,7 @@
         "build:js": "node esbuild.mjs",
         "build:ext": "web-ext build --config web-ext-config.mjs --overwrite-dest",
         "build": "pnpm build:js && pnpm build:ext",
+        "dev": "node esbuild.mjs --watch & web-ext run --config web-ext-config.mjs; kill %1",
         "start": "pnpm build:js && web-ext run --config web-ext-config.mjs",
         "lint": "web-ext lint --config web-ext-config.mjs",
         "typecheck": "tsc --noEmit"

@@ -1,12 +1,32 @@
 #ytdg-player-card {
     display: flex;
+    flex-direction: column;
+    gap: 8px;
     align-items: center;
     justify-content: center;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    height: 100%;
     background: #0f0f0f;
     color: #aaa;
     font-family: system-ui, sans-serif;
     font-size: 18px;
     border-radius: 12px;
+    
+    > button {
+        padding: 12px;
+        background: transparent;
+        color: #aaa;
+        border: 1px solid #888;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background, transform 0.1s ease-in-out;
+        
+        &:hover {
+            background: #333;
+        }
+        
+        &:active {
+            transform: scale(0.95);
+        }
+    }
 }
