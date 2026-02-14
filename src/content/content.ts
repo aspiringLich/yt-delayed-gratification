@@ -9,7 +9,9 @@ import browser from "webextension-polyfill";
 
 const PLAYER_CARD = "ytdg-player-card";
 
+let url = window.location.href;
 async function update() {
+    console.log("update")
     if (location.pathname === "/watch") {
         const player = document.getElementById("movie_player");
         if (!player) return;
@@ -31,9 +33,14 @@ async function update() {
             setTimeout(update, 500);
         }
         
+        if (url !== window.location.href) {
+            url = window.location.href;
+            location.reload();
+        }
+
         activate_play_supressor();
         player.replaceChildren(card);
-    }
+    } else url = window.location.href;
 }
 
 function card_add(video_id: string): HTMLElement {
@@ -46,7 +53,6 @@ function card_add(video_id: string): HTMLElement {
         create_button("Add to Queue", {
             callback: () => {
                 add_to_queue(video_id);
-                activate_play_supressor();
             },
         }),
     );
@@ -79,41 +85,16 @@ function stop_interval() {
     }
 }
 
-let suppressed_video: HTMLVideoElement | null = null;
-
-function pause_player() {
-    console.log("pause_player")
-    let player = document.getElementById("movie_player") as HTMLElement & { pauseVideo: () => void } | null;
-    player?.pauseVideo();
-}
-
 function activate_play_supressor() {
-    let video: HTMLVideoElement | null = document.querySelector("video.video-stream.html5-main-video");
-    if (!video) {
-        setTimeout(activate_play_supressor, 100);
-        return;
-    }
-    
-    if (suppressed_video === video) return;
-    
-    if (suppressed_video) {
-        suppressed_video.removeEventListener("play", pause_player);
-        suppressed_video.removeEventListener("playing", pause_player);
-    }
-    
-    suppressed_video = video;
-    video.addEventListener("play", pause_player);
-    video.addEventListener("playing", pause_player);
+    document.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
+        v.removeAttribute("src");
+        ``;
+        v.querySelectorAll("source").forEach((s) => s.remove());
+        v.load();
+    });
 }
 
-window.addEventListener("yt-page-type-changed", update);
-window.addEventListener("yt-page-data-updated", update);
-window.addEventListener("yt-navigate", () => {
-    stop_interval();
-    update();
-});
-window.addEventListener("yt-navigate-start", update);
-window.addEventListener("yt-navigate-finish", update);
+window.addEventListener("yt-navigate", update);
 update();
 // const observer = new MutationObserver(() => update());
 // observer.observe(document.body, { childList: true, subtree: true });
