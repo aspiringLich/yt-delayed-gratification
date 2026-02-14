@@ -32,14 +32,14 @@ async function update() {
             if (card) location.reload();
         } else if (try_find) {
             // video is queued but not ready
-            activate_play_supressor();
+            suppress_video();
             start_interval();
             if (!card) card = create_element({ id: PLAYER_CARD });
             card.innerText = pretty_time(try_find.time - Date.now() + delay!);
             player.replaceChildren(card);
         } else if (!card) {
             // video is not queued
-            activate_play_supressor();
+            suppress_video();
             card = card_add(video_id);
             player.replaceChildren(card);
         }
@@ -64,20 +64,12 @@ function card_add(video_id: string): HTMLElement {
 }
 
 let interval_id: number | null = null;
-
 function start_interval() {
     if (interval_id !== null) return;
     interval_id = window.setInterval(update, 500);
 }
 
-function stop_interval() {
-    if (interval_id !== null) {
-        clearInterval(interval_id);
-        interval_id = null;
-    }
-}
-
-function activate_play_supressor() {
+function suppress_video() {
     document.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
         v.removeAttribute("src");
         v.querySelectorAll("source").forEach((s) => s.remove());
