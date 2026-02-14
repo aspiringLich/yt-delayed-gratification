@@ -11,7 +11,9 @@
     font-family: system-ui, sans-serif;
     font-size: 18px;
     border-radius: 12px;
-    
+}
+
+[id^="ytdg"] {
     > button {
         padding: 12px;
         background: transparent;
@@ -19,14 +21,16 @@
         border: 1px solid #888;
         border-radius: 8px;
         cursor: pointer;
-        transition: background, transform 0.1s ease-in-out;
+        transition: background, border-color, color, 0.1s ease-in-out;
         
         &:hover {
             background: #333;
         }
         
         &:active {
-            transform: scale(0.95);
+            border-color: #666;
+            color: #888;
+            background: #222;
         }
     }
 }
