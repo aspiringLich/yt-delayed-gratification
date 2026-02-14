@@ -30,11 +30,11 @@ export type QueueItem = {
 };
 
 export async function add_to_queue(id: string) {
-    let { queue, max_queue, delay }: { queue?: QueueItem[]; max_queue?: number; delay?: number } =
-        await browser.storage.local.get(["queue", "max_queue", "delay"]);
+    let { queue, max_queue }: { queue?: QueueItem[]; max_queue?: number } =
+        await browser.storage.local.get(["queue", "max_queue"]);
 
     if (!queue) queue = [];
-    queue.push({ id, time: Date.now() + (delay || 0) * 1000 });
+    queue.push({ id, time: Date.now() });
     if (max_queue && queue.length > max_queue) {
         queue.sort((a, b) => a.time - b.time);
         queue = queue.slice(0, max_queue);

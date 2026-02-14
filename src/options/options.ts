@@ -1,27 +1,47 @@
 import browser from "webextension-polyfill";
 
-const form = document.getElementById("settingsForm") as HTMLFormElement;
-const delayInput = document.getElementById("delay") as HTMLInputElement;
-const enabledInput = document.getElementById("enabled") as HTMLInputElement;
-const saveStatus = document.getElementById("saveStatus")!;
+const hoursInput = document.getElementById("hours") as HTMLInputElement;
+const minutesInput = document.getElementById("minutes") as HTMLInputElement;
+const maxQueueInput = document.getElementById("max_queue") as HTMLInputElement;
 
-async function loadSettings(): Promise<void> {
-    const { delay = 5, enabled = true } = await browser.storage.local.get([
-        "delay",
-        "enabled",
-    ]);
-    delayInput.value = String(delay);
-    enabledInput.checked = Boolean(enabled);
+function validate(input: HTMLInputElement): boolean {
+    const val = Number(input.value);
+    const valid =
+        input.value !== "" &&
+        Number.isInteger(val) &&
+        val >= Number(input.min) &&
+        val <= Number(input.max);
+    input.classList.toggle("invalid", !valid);
+    return valid;
 }
 
-form.addEventListener("submit", async (e: Event) => {
-    e.preventDefault();
-    await browser.storage.local.set({
-        delay: Number(delayInput.value),
-        enabled: enabledInput.checked,
+function delayFromInputs(): number {
+    return Number(hoursInput.value) * 3600_000 + Number(minutesInput.value) * 60_000;
+}
+
+async function loadSettings(): Promise<void> {
+    const { delay = 0, max_queue = 10 } = await browser.storage.local.get([
+        "delay",
+        "max_queue",
+    ]);
+    const totalMinutes = Math.floor(Number(delay) / 60_000);
+    hoursInput.value = String(Math.floor(totalMinutes / 60));
+    minutesInput.value = String(totalMinutes % 60);
+    maxQueueInput.value = String(max_queue);
+}
+
+for (const input of [hoursInput, minutesInput]) {
+    input.addEventListener("input", () => {
+        if (validate(hoursInput) && validate(minutesInput)) {
+            browser.storage.local.set({ delay: delayFromInputs() });
+        }
     });
-    saveStatus.classList.remove("hidden");
-    setTimeout(() => saveStatus.classList.add("hidden"), 2000);
+}
+
+maxQueueInput.addEventListener("input", () => {
+    if (validate(maxQueueInput)) {
+        browser.storage.local.set({ max_queue: Number(maxQueueInput.value) });
+    }
 });
 
 loadSettings();

@@ -17,55 +17,51 @@ body {
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
-    font-size: 20px;
-    margin-bottom: 20px;
-}
-
-form {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-label {
+h1 {
+    font-size: 20px;
+}
+
+.field {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 14px;
 }
 
+.delay-inputs {
+    display: flex;
+    gap: 8px;
+}
+
+.delay-inputs label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #555;
+}
+
 input[type="number"] {
-    width: 80px;
+    width: 64px;
     padding: 6px 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    background: #0060df;
-    color: #fff;
-    font-size: 14px;
-    cursor: pointer;
-    align-self: flex-start;
+input[type="number"]:focus {
+    outline: none;
+    border-color: #0060df;
+    box-shadow: 0 0 0 2px rgba(0, 96, 223, 0.2);
 }
 
-button:hover {
-    background: #004ebc;
-}
-
-#saveStatus {
-    margin-top: 12px;
-    font-size: 13px;
-    color: #058b00;
-}
-
-.hidden {
-    display: none;
+input[type="number"].invalid {
+    border-color: #d70022;
+    box-shadow: 0 0 0 2px rgba(215, 0, 34, 0.15);
 }
