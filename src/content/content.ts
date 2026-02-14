@@ -20,17 +20,23 @@ async function update() {
 
         let { queue }: { queue?: QueueItem[] } =
             await browser.storage.local.get("queue");
-
+        
+        // this is really ugly
         let try_find = queue?.find((item) => item.id === video_id);
         if (try_find && try_find.time < Date.now()) {
             if (card) location.reload();
             else return;
         } else if (try_find) {
-            card = card_timer(try_find);
             start_interval();
-        } else {
+            if (!card) card = card_timer(try_find);
+            else {
+                card.innerHTML = pretty_time(try_find.time - Date.now());
+                return;
+            }
+        } else if (!card) {
             card = card_add(video_id);
-            setTimeout(update, 500);
+        } else {
+            return;
         }
         
         if (url !== window.location.href) {
@@ -53,6 +59,7 @@ function card_add(video_id: string): HTMLElement {
         create_button("Add to Queue", {
             callback: () => {
                 add_to_queue(video_id);
+                start_interval();
             },
         }),
     );
@@ -75,7 +82,7 @@ let interval_id: number | null = null;
 
 function start_interval() {
     if (interval_id !== null) return;
-    interval_id = window.setInterval(update, 1000);
+    interval_id = window.setInterval(update, 450);
 }
 
 function stop_interval() {
@@ -94,7 +101,8 @@ function activate_play_supressor() {
     });
 }
 
-window.addEventListener("yt-navigate", update);
+window.addEventListener("yt-navigate-start", update);
+window.addEventListener("yt-navigate-finish", update);
 update();
 // const observer = new MutationObserver(() => update());
 // observer.observe(document.body, { childList: true, subtree: true });

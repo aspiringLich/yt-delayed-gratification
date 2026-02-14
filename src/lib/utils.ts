@@ -34,7 +34,7 @@ export async function add_to_queue(id: string) {
         await browser.storage.local.get(["queue", "max_queue", "delay"]);
 
     if (!queue) queue = [];
-    queue.push({ id, time: Date.now() + (delay || 5000) });
+    queue.push({ id, time: Date.now() + (delay || 0) * 1000 });
     if (max_queue && queue.length > max_queue) {
         queue.sort((a, b) => a.time - b.time);
         queue = queue.slice(0, max_queue);
