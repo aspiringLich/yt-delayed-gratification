@@ -1,7 +1,17 @@
 import browser from "webextension-polyfill";
 
 browser.runtime.onInstalled.addListener(async () => {
-    if (!(await browser.storage.local.get("init")).init) {
-        await browser.storage.local.set({ delay: 3600_000, max_queue: 10, init: true });
+    const values = {
+        delay: 3600_000,
+        max_queue: 10,
+    };
+    const keys = Object.keys(values);
+    const existing = await browser.storage.local.getKeys();
+    const extra_keys = keys.filter((key) => !existing.includes(key));
+    if (extra_keys.length > 0) {
+        const to_set = Object.fromEntries(
+            Object.entries(values).filter(([key]) => !existing.includes(key))
+        );
+        await browser.storage.local.set(to_set);
     }
 });

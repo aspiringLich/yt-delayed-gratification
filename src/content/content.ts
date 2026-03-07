@@ -18,6 +18,8 @@ async function update() {
     url = window.location.href;
 
     if (location.pathname === "/watch") {
+        if (href_changed) window.location.reload(true);
+
         const player = document.getElementById("movie_player");
         if (!player) return;
         let video_id = new URLSearchParams(document.location.search).get("v")!;
@@ -32,7 +34,6 @@ async function update() {
             if (card) location.reload();
         } else if (qitem) {
             // video is queued but not ready
-            if (href_changed) location.reload();
             suppress_video();
             start_interval();
             if (!card) card = create_element({ id: PLAYER_CARD });
@@ -40,7 +41,6 @@ async function update() {
             player.replaceChildren(card);
         } else if (!card) {
             // video is not queued
-            if (href_changed) location.reload();
             suppress_video();
             card = card_add(video_id);
             player.replaceChildren(card);
@@ -59,7 +59,7 @@ async function update() {
             else console.error("Failed to create queue card");
 
             start_interval();
-        } else {
+        } else if (card.getBoundingClientRect().top > 0) {
             update_queue_card();
         }
     }
@@ -86,14 +86,14 @@ async function queue_card(): Promise<HTMLElement | null> {
     let { queue, delay }: { queue?: QueueItem[]; delay?: number } =
         await browser.storage.local.get(["queue", "delay"]);
 
-    if (!queue?.length) return null;
-
     const card = create_element({ id: QUEUE_CARD });
     const title = create_element({ tag: "h2", text: "Queue" });
     card.appendChild(title);
 
     const queue_el = create_element({ id: "-ytdg-queue" });
     card.appendChild(queue_el);
+
+    if (!queue?.length) return card;
 
     const offset = delay! - Date.now();
     for (const item of queue) {
@@ -103,7 +103,10 @@ async function queue_card(): Promise<HTMLElement | null> {
             tag: "img",
             src: `https://img.youtube.com/vi/${item.id}/mqdefault.jpg`,
         });
-        const entry = create_element({ id: "-ytdg-queue-entry", "data-item-time": item.time.toString() });
+        const entry = create_element({
+            id: "-ytdg-queue-entry",
+            "data-item-time": item.time.toString(),
+        });
 
         if (time_remaining > 0) {
             const label = create_element({
@@ -127,16 +130,20 @@ async function queue_card(): Promise<HTMLElement | null> {
 }
 
 async function update_queue_card() {
-    let { delay }: { delay?: number } = await browser.storage.local.get(["delay"]);
+    let { delay }: { delay?: number } = await browser.storage.local.get([
+        "delay",
+    ]);
 
     const queue_el = document.getElementById("-ytdg-queue");
 
     const offset = delay! - Date.now();
     for (const entry of queue_el!.children) {
-        const time_remaining = parseInt(entry.getAttribute("data-item-time") ?? "0") + offset;
+        const time_remaining =
+            parseInt(entry.getAttribute("data-item-time") ?? "0") + offset;
 
         if (time_remaining > 0) {
-            entry.querySelector("#-ytdg-queue-entry-time")!.textContent = pretty_time(time_remaining);
+            entry.querySelector("#-ytdg-queue-entry-time")!.textContent =
+                pretty_time(time_remaining);
         } else {
             entry.querySelector("#-ytdg-queue-entry-time")?.remove();
             let link = entry.querySelector("a");

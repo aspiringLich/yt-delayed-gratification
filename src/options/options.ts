@@ -20,7 +20,7 @@ function delayFromInputs(): number {
 }
 
 async function loadSettings(): Promise<void> {
-    const { delay = 0, max_queue = 10 } = await browser.storage.local.get([
+    const { delay , max_queue } = await browser.storage.local.get([
         "delay",
         "max_queue",
     ]);
