@@ -9,7 +9,7 @@
             "strict_min_version": "109.0"
         }
     },
-    "permissions": ["storage", "webRequest", "webRequestBlocking", "*://*.youtube.com/*"],
+    "permissions": ["storage", "tabs", "webRequest", "webRequestBlocking", "*://*.youtube.com/*"],
     "content_scripts": [
         {
             "matches": ["*://*.youtube.com/*"],

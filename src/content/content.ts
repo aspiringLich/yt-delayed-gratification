@@ -18,15 +18,18 @@ async function update() {
     url = window.location.href;
 
     if (location.pathname === "/watch") {
-        if (href_changed) window.location.reload(true);
+        if (href_changed) window.location.reload();
 
-        const player = document.getElementById("movie_player");
-        if (!player) return;
+        const player = document.querySelector(".ytd-player");
+        if (!player) {
+            setTimeout(update, 100);
+            return;
+        }
         let video_id = new URLSearchParams(document.location.search).get("v")!;
         let card = document.getElementById(PLAYER_CARD);
 
         let { queue, delay }: { queue?: QueueItem[]; delay?: number } =
-            await browser.storage.local.get(["queue", "delay"]);
+             await browser.storage.local.get(["queue", "delay"]);
         let qitem = queue?.find((item) => item.id === video_id);
 
         if (qitem && qitem.time + delay! < Date.now()) {
@@ -34,14 +37,12 @@ async function update() {
             if (card) location.reload();
         } else if (qitem) {
             // video is queued but not ready
-            suppress_video();
             start_interval();
             if (!card) card = create_element({ id: PLAYER_CARD });
             card.innerText = pretty_time(qitem.time - Date.now() + delay!);
             player.replaceChildren(card);
         } else if (!card) {
             // video is not queued
-            suppress_video();
             card = card_add(video_id);
             player.replaceChildren(card);
         }
@@ -168,15 +169,6 @@ let interval_id: number | null = null;
 function start_interval() {
     if (interval_id !== null) return;
     interval_id = window.setInterval(update, 500);
-}
-
-// only seems to work on a page reload
-function suppress_video() {
-    document.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
-        v.removeAttribute("src");
-        v.querySelectorAll("source").forEach((s) => s.remove());
-        v.load();
-    });
 }
 
 window.addEventListener("yt-navigate-start", update);
