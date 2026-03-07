@@ -18,9 +18,6 @@ async function update() {
     url = window.location.href;
 
     if (location.pathname === "/watch") {
-        // if the url has changed, reload. Full reload is needed to disable the video players.
-        if (href_changed) location.reload();
-
         const player = document.getElementById("movie_player");
         if (!player) return;
         let video_id = new URLSearchParams(document.location.search).get("v")!;
@@ -35,6 +32,7 @@ async function update() {
             if (card) location.reload();
         } else if (qitem) {
             // video is queued but not ready
+            if (href_changed) location.reload();
             suppress_video();
             start_interval();
             if (!card) card = create_element({ id: PLAYER_CARD });
@@ -42,6 +40,7 @@ async function update() {
             player.replaceChildren(card);
         } else if (!card) {
             // video is not queued
+            if (href_changed) location.reload();
             suppress_video();
             card = card_add(video_id);
             player.replaceChildren(card);
@@ -58,6 +57,10 @@ async function update() {
             console.debug(card);
             if (card) contents.parentElement!.insertBefore(card, contents);
             else console.error("Failed to create queue card");
+
+            start_interval();
+        } else {
+            update_queue_card();
         }
     }
 }
@@ -92,14 +95,15 @@ async function queue_card(): Promise<HTMLElement | null> {
     const queue_el = create_element({ id: "-ytdg-queue" });
     card.appendChild(queue_el);
 
+    const offset = delay! - Date.now();
     for (const item of queue) {
-        const time_remaining = item.time + delay! - Date.now();
+        const time_remaining = item.time + offset;
 
         const thumb = create_element({
             tag: "img",
             src: `https://img.youtube.com/vi/${item.id}/mqdefault.jpg`,
         });
-        const entry = create_element({ id: "-ytdg-queue-entry" });
+        const entry = create_element({ id: "-ytdg-queue-entry", "data-item-time": item.time.toString() });
 
         if (time_remaining > 0) {
             const label = create_element({
@@ -109,11 +113,48 @@ async function queue_card(): Promise<HTMLElement | null> {
             });
             entry.replaceChildren(thumb, label);
         } else {
-            entry.replaceChildren(thumb);
+            const link = create_element({
+                tag: "a",
+                href: `https://www.youtube.com/watch?v=${item.id}`,
+                target: "_blank",
+            });
+            link.appendChild(thumb);
+            entry.replaceChildren(link);
         }
         queue_el.appendChild(entry);
     }
     return card;
+}
+
+async function update_queue_card() {
+    let { delay }: { delay?: number } = await browser.storage.local.get(["delay"]);
+
+    const queue_el = document.getElementById("-ytdg-queue");
+
+    const offset = delay! - Date.now();
+    for (const entry of queue_el!.children) {
+        const time_remaining = parseInt(entry.getAttribute("data-item-time") ?? "0") + offset;
+
+        if (time_remaining > 0) {
+            entry.querySelector("#-ytdg-queue-entry-time")!.textContent = pretty_time(time_remaining);
+        } else {
+            entry.querySelector("#-ytdg-queue-entry-time")?.remove();
+            let link = entry.querySelector("a");
+            if (!link) {
+                const thumb = entry.querySelector("img");
+                const id = thumb?.src.match(/\/vi\/([^&]+)/)?.[1];
+                const new_link = create_element({
+                    tag: "a",
+                    href: `https://www.youtube.com/watch?v=${id}`,
+                    target: "_blank",
+                }) as HTMLElement;
+                if (thumb) {
+                    new_link.appendChild(thumb);
+                }
+                entry.replaceChildren(new_link);
+            }
+        }
+    }
 }
 
 let interval_id: number | null = null;
@@ -122,6 +163,7 @@ function start_interval() {
     interval_id = window.setInterval(update, 500);
 }
 
+// only seems to work on a page reload
 function suppress_video() {
     document.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
         v.removeAttribute("src");
