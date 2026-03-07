@@ -13,6 +13,66 @@
     border-radius: 12px;
 }
 
+#ytdg-queue-card {
+    display: flex;
+    flex-direction: column;
+    font-family: system-ui, sans-serif;
+    font-size: 18px;
+    width: 100%;
+
+    #-ytdg-queue {
+        display: flex;
+        flex-direction: row;
+
+        gap: var(--ytd-rich-grid-item-margin);
+        overflow-x: auto;
+        padding-top: 6px;
+        padding-bottom: 6px;
+
+        margin-left: calc(
+            var(--ytd-rich-grid-item-margin) / 2 +
+                var(--ytd-rich-grid-gutter-margin)
+        );
+        margin-right: calc(
+            var(--ytd-rich-grid-item-margin) / 2 +
+                var(--ytd-rich-grid-gutter-margin)
+        );
+    }
+
+    #-ytdg-queue-entry {
+        position: relative;
+        display: inline-block;
+        flex-shrink: 0;
+
+        --ytd-rich-item-row-usable-width: calc(100% + var(--ytd-rich-grid-item-margin));
+        width: calc(
+            var(--ytd-rich-item-row-usable-width) /
+                var(--ytd-rich-grid-items-per-row) -
+                var(--ytd-rich-grid-item-margin)
+        );
+
+        > * {
+            border-radius: 12px; /*.ytThumbnailViewModelLarge*/
+        }
+
+        span {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+}
+
 [id^="ytdg"] {
     > button {
         padding: 12px;
@@ -21,12 +81,16 @@
         border: 1px solid #888;
         border-radius: 8px;
         cursor: pointer;
-        transition: background, border-color, color, 0.1s ease-in-out;
-        
+        transition:
+            background,
+            border-color,
+            color,
+            0.1s ease-in-out;
+
         &:hover {
             background: #333;
         }
-        
+
         &:active {
             border-color: #666;
             color: #888;

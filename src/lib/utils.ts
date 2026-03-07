@@ -1,13 +1,21 @@
 import browser from "webextension-polyfill";
 
-export function create_element(opts?: {
+export function create_element(opts: {
     tag?: string;
     text?: string;
     id?: string;
+    [key: string]: any;
 }): HTMLElement {
     const element = document.createElement(opts?.tag || "div");
     element.textContent = opts?.text || "";
     element.id = opts?.id || "";
+
+    for (const [key, value] of Object.entries(opts)) {
+        if (key !== "tag" && key !== "text" && key !== "id") {
+            element.setAttribute(key, value);
+        }
+    }
+
     return element;
 }
 

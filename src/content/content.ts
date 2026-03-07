@@ -8,15 +8,18 @@ import {
 import browser from "webextension-polyfill";
 
 const PLAYER_CARD = "ytdg-player-card";
+const QUEUE_CARD = "ytdg-queue-card";
 
 let url = window.location.href;
 async function update() {
-    console.log("update");
+    console.debug("update");
+
+    let href_changed = url !== window.location.href;
+    url = window.location.href;
+
     if (location.pathname === "/watch") {
-        if (url !== window.location.href) {
-            url = window.location.href;
-            location.reload();
-        }
+        // if the url has changed, reload. Full reload is needed to disable the video players.
+        if (href_changed) location.reload();
 
         const player = document.getElementById("movie_player");
         if (!player) return;
@@ -25,17 +28,17 @@ async function update() {
 
         let { queue, delay }: { queue?: QueueItem[]; delay?: number } =
             await browser.storage.local.get(["queue", "delay"]);
-        let try_find = queue?.find((item) => item.id === video_id);
+        let qitem = queue?.find((item) => item.id === video_id);
 
-        if (try_find && try_find.time + delay! < Date.now()) {
+        if (qitem && qitem.time + delay! < Date.now()) {
             // video is ready to play!
             if (card) location.reload();
-        } else if (try_find) {
+        } else if (qitem) {
             // video is queued but not ready
             suppress_video();
             start_interval();
             if (!card) card = create_element({ id: PLAYER_CARD });
-            card.innerText = pretty_time(try_find.time - Date.now() + delay!);
+            card.innerText = pretty_time(qitem.time - Date.now() + delay!);
             player.replaceChildren(card);
         } else if (!card) {
             // video is not queued
@@ -43,7 +46,20 @@ async function update() {
             card = card_add(video_id);
             player.replaceChildren(card);
         }
-    } else url = window.location.href;
+    } else if (location.pathname == "/") {
+        if (href_changed) location.reload();
+
+        const contents = document.getElementById("contents");
+        if (!contents) return;
+
+        let card = document.getElementById(QUEUE_CARD);
+        if (!card) {
+            card = await queue_card();
+            console.debug(card);
+            if (card) contents.parentElement!.insertBefore(card, contents);
+            else console.error("Failed to create queue card");
+        }
+    }
 }
 
 function card_add(video_id: string): HTMLElement {
@@ -60,6 +76,43 @@ function card_add(video_id: string): HTMLElement {
             },
         }),
     );
+    return card;
+}
+
+async function queue_card(): Promise<HTMLElement | null> {
+    let { queue, delay }: { queue?: QueueItem[]; delay?: number } =
+        await browser.storage.local.get(["queue", "delay"]);
+
+    if (!queue?.length) return null;
+
+    const card = create_element({ id: QUEUE_CARD });
+    const title = create_element({ tag: "h2", text: "Queue" });
+    card.appendChild(title);
+
+    const queue_el = create_element({ id: "-ytdg-queue" });
+    card.appendChild(queue_el);
+
+    for (const item of queue) {
+        const time_remaining = item.time + delay! - Date.now();
+
+        const thumb = create_element({
+            tag: "img",
+            src: `https://img.youtube.com/vi/${item.id}/mqdefault.jpg`,
+        });
+        const entry = create_element({ id: "-ytdg-queue-entry" });
+
+        if (time_remaining > 0) {
+            const label = create_element({
+                tag: "span",
+                text: pretty_time(time_remaining),
+                id: "-ytdg-queue-entry-time",
+            });
+            entry.replaceChildren(thumb, label);
+        } else {
+            entry.replaceChildren(thumb);
+        }
+        queue_el.appendChild(entry);
+    }
     return card;
 }
 

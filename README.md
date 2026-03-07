@@ -10,3 +10,7 @@ TODO
  - Don't block Music videos
  - instantly free one video from queue every day (builds up?, configurable)
  - 
+
+ ```bash
+# run in separate instance
+pnpm
