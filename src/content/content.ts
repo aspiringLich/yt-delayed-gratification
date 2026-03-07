@@ -20,11 +20,10 @@ async function update() {
     if (location.pathname === "/watch") {
         if (href_changed) window.location.reload();
 
-        const player = document.querySelector(".ytd-player");
-        if (!player) {
-            setTimeout(update, 100);
+        const player = document.querySelector("#player ytd-player#ytd-player");
+        if (!player)
             return;
-        }
+
         let video_id = new URLSearchParams(document.location.search).get("v")!;
         let card = document.getElementById(PLAYER_CARD);
 
@@ -174,6 +173,7 @@ function start_interval() {
 window.addEventListener("yt-navigate-start", update);
 window.addEventListener("yt-navigate", update);
 window.addEventListener("yt-navigate-finish", update);
+window.addEventListener("DOMContentLoaded", update);
 update();
 // const observer = new MutationObserver(() => update());
 // observer.observe(document.body, { childList: true, subtree: true });

@@ -16,7 +16,6 @@ browser.webRequest.onBeforeRequest.addListener(
 
         const { queue, delay }: { queue?: QueueItem[]; delay?: number } =
             await browser.storage.local.get(["queue", "delay"]);
-
         const qitem = queue?.find((item) => item.id === video_id);
         if (!qitem) return { cancel: true };
 
